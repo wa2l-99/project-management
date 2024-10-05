@@ -6,8 +6,11 @@ services:
       POSTGRES_USER: wael
       POSTGRES_PASSWORD: wael
       PGDATA: /var/lib/postgresql/data
+      POSTGRES_DB: pmt
     volumes:
       - postgres:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
     ports:
       - "5432:5432"
     networks:
@@ -28,7 +31,7 @@ services:
     networks:
       - pmt-net
     restart: unless-stopped
-    
+
   mail-dev:
     container_name: mail-dev
     image: maildev/maildev
