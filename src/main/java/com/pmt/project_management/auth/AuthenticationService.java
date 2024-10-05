@@ -1,18 +1,15 @@
 package com.pmt.project_management.auth;
 
-import com.pmt.project_management.exception.UserAlreadyExistsException;
+import com.pmt.project_management.exception.AlreadyExistsException;
 import com.pmt.project_management.exception.UserNotFoundException;
 import com.pmt.project_management.role.Role;
 import com.pmt.project_management.user.UserMapper;
-import com.pmt.project_management.role.ERole;
 import com.pmt.project_management.role.RoleRepository;
 import com.pmt.project_management.security.JwtService;
 import com.pmt.project_management.user.User;
 import com.pmt.project_management.user.UserRepository;
 import com.pmt.project_management.user.UserResponse;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,7 +45,7 @@ public class AuthenticationService {
                 .build();
 
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new UserAlreadyExistsException("L'utilisateur avec l'email " + user.getEmail() + " existe déja");
+            throw new AlreadyExistsException("L'utilisateur avec l'email " + user.getEmail() + " existe déja");
         }
 
         return userRepository.save(user).getId();
