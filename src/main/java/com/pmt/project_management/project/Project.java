@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -48,6 +49,6 @@ public class Project extends BaseEntity {
 
     // Liste des tâches associées au projet (OneToMany relation)
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Task> tasks = new HashSet<>();  // Les tâches associées au projet
+    private List<Task> tasks;  // Les tâches associées au projet
 
 }

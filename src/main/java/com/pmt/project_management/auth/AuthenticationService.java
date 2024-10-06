@@ -9,6 +9,7 @@ import com.pmt.project_management.security.JwtService;
 import com.pmt.project_management.user.User;
 import com.pmt.project_management.user.UserRepository;
 import com.pmt.project_management.user.UserResponse;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -76,7 +77,9 @@ public class AuthenticationService {
     }
 
     public void deleteUser(Integer id) {
-        userRepository.deleteById(id);
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Utilisateur non trouvé avec l'Id: " + id));
+        userRepository.delete(existingUser);
     }
 }
 
