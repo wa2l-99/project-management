@@ -94,5 +94,15 @@ public class ProjectController {
         // Sinon, retourner la liste des projets
         return ResponseEntity.ok(projects);
     }
+
+    // Endpoint pour obtenir la liste des membres d'un projet
+    @GetMapping("/{projectId}/members")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEMBER')")
+    public ResponseEntity<List<UserResponse>> getProjectMembers(
+            @PathVariable Integer projectId,
+            Authentication authentication) {
+        List<UserResponse> members = projectService.getProjectMembers(projectId, authentication);
+        return ResponseEntity.ok(members);
+    }
 }
 

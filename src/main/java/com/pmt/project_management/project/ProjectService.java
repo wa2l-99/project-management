@@ -104,7 +104,6 @@ public class ProjectService {
         projectRepository.delete(existingProject);
     }
 
-
     public ProjectResponse inviteMemberToProject(Integer projectId, InviteMemberRequest request, Authentication connectedUser) {
         // Récupérer l'utilisateur connecté (administrateur)
         User adminUser = (User) connectedUser.getPrincipal();
@@ -223,5 +222,23 @@ public class ProjectService {
                 .collect(Collectors.toList());
     }
 
+
+    // Récupérer les membres d'un projet
+    public List<UserResponse> getProjectMembers(Integer projectId, Authentication connectedUser) {
+        User user = (User) connectedUser.getPrincipal();
+
+        // Récupérer le projet
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new EntityNotFoundException("Projet non trouvé avec l'ID : " + projectId));
+
+        // Vérifier si l'utilisateur est membre ou administrateur du projet
+        if (!project.getMembers().contains(user) && !project.getOwner().getId().equals(user.getId())) {
+            throw new IllegalStateException("Vous devez être membre ou administrateur pour voir les membres.");
+        }
+
+        return project.getMembers().stream()
+                .map(userMapper::fromUser)
+                .collect(Collectors.toList());
+    }
 
 }
