@@ -48,4 +48,10 @@ public class AuthenticationController {
         service.deleteUser(userId);
         return ResponseEntity.accepted().build();
     }
+
+    @GetMapping("/emails")
+    public ResponseEntity<List<String>> getAllUserEmails() {
+        List<String> emails = service.getAllUserEmails();
+        return ResponseEntity.ok(emails);
+    }
 }

@@ -1,6 +1,10 @@
 package com.pmt.project_management.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.pmt.project_management.history.TaskModifiedHistory;
+import com.pmt.project_management.project.Project;
 import com.pmt.project_management.role.Role;
+import com.pmt.project_management.task.Task;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -9,11 +13,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
 @Table(name = "_user")
 @EntityListeners(AuditingEntityListener.class)
 public class User implements UserDetails, Principal {
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,9 +45,7 @@ public class User implements UserDetails, Principal {
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
     @CreatedDate
@@ -54,13 +56,26 @@ public class User implements UserDetails, Principal {
     @Column(insertable = false)
     private LocalDateTime lastModifiedDate;
 
+    @OneToMany(mappedBy = "owner")
+    @JsonIgnore
+    private Set<Project> projectsOwner = new HashSet<>();
+
+    // Relation ManyToMany avec les projets (les utilisateurs peuvent être membres de plusieurs projets)
+    @ManyToMany(mappedBy = "members")
+    @JsonIgnore
+    private Set<Project> projects = new HashSet<>();
+
+    // Relation OneToMany pour les tâches assignées à l'utilisateur
+    @OneToMany(mappedBy = "assignedTo")
+    private Set<Task> assignedTasks = new HashSet<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<TaskModifiedHistory> histories;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles
-                .stream()
-                .map(role -> new SimpleGrantedAuthority(role.getNom().name()))
-                .collect(Collectors.toList());
+        return this.roles.stream().map(role -> new SimpleGrantedAuthority(role.getNom().name())).collect(Collectors.toList());
     }
 
     @Override
@@ -96,6 +111,21 @@ public class User implements UserDetails, Principal {
 
     public String getFullName() {
         return prenom + " " + nom;
+    }
+
+
+    // Redéfinir equals pour comparer les utilisateurs par leur ID ou email
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
 }

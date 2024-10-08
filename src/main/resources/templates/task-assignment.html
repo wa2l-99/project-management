@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvelle tâche assignée</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: 10px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #45b545;
+        }
+
+        p {
+            font-size: 16px;
+            color: #666666;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #999999;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Nouvelle tâche assignée</h1>
+    <p class="greeting" th:text="'Bonjour ' + ${username} + ','"></p>
+
+    <p>Vous avez été assigné à une nouvelle tâche : <strong><span th:text="${taskName}"></span></strong> dans le projet
+        <strong><span th:text="${projectName}"></span></strong>.</p>
+    <p>Merci de vérifier la plateforme pour plus de détails.</p>
+    <div class="footer">
+        <p>Cordialement,<br>L'équipe de gestion de projet</p>
+    </div>
+</div>
+</body>
+</html>
