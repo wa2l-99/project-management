@@ -26,8 +26,6 @@ public class TaskModifiedHistory extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
-
     //Task relationship
     @ManyToOne
     @JoinColumn(name = "task_id")
