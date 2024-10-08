@@ -16,10 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -32,6 +29,7 @@ import java.util.stream.Collectors;
 @Table(name = "_user")
 @EntityListeners(AuditingEntityListener.class)
 public class User implements UserDetails, Principal {
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,9 +45,7 @@ public class User implements UserDetails, Principal {
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
     @CreatedDate
@@ -61,6 +57,7 @@ public class User implements UserDetails, Principal {
     private LocalDateTime lastModifiedDate;
 
     @OneToMany(mappedBy = "owner")
+    @JsonIgnore
     private Set<Project> projectsOwner = new HashSet<>();
 
     // Relation ManyToMany avec les projets (les utilisateurs peuvent être membres de plusieurs projets)
@@ -75,12 +72,10 @@ public class User implements UserDetails, Principal {
     @OneToMany(mappedBy = "user")
     private List<TaskModifiedHistory> histories;
 
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles
-                .stream()
-                .map(role -> new SimpleGrantedAuthority(role.getNom().name()))
-                .collect(Collectors.toList());
+        return this.roles.stream().map(role -> new SimpleGrantedAuthority(role.getNom().name())).collect(Collectors.toList());
     }
 
     @Override
@@ -116,6 +111,21 @@ public class User implements UserDetails, Principal {
 
     public String getFullName() {
         return prenom + " " + nom;
+    }
+
+
+    // Redéfinir equals pour comparer les utilisateurs par leur ID ou email
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
 }

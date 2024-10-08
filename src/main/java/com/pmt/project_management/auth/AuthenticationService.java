@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
-    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
@@ -81,5 +80,14 @@ public class AuthenticationService {
                 .orElseThrow(() -> new EntityNotFoundException("Utilisateur non trouvé avec l'Id: " + id));
         userRepository.delete(existingUser);
     }
+
+    // Méthode pour récupérer tous les emails des utilisateurs
+    public List<String> getAllUserEmails() {
+        return userRepository.findAll()
+                .stream()
+                .map(User::getEmail)
+                .collect(Collectors.toList());
+    }
+
 }
 
