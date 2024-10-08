@@ -1,6 +1,7 @@
 package com.pmt.project_management.task;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -69,5 +70,23 @@ public class TaskController {
     public ResponseEntity<List<TaskResponse>> getTasksByPriority(@PathVariable Integer projectId, @RequestParam EPriority priority, Authentication authentication) {
         List<TaskResponse> taskResponses = taskService.getTasksByPriority(projectId, priority, authentication);
         return ResponseEntity.ok(taskResponses);
+    }
+
+    @GetMapping("/my-projects/history")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEMBER') or hasAuthority('OBSERVER')")
+    public ResponseEntity<List<TaskHistoryResponse>> getTaskModificationsForUserProjects(Authentication authentication) {
+        List<TaskHistoryResponse> history = taskService.getTaskModificationsForUserProjects(authentication);
+        return ResponseEntity.ok(history);
+    }
+
+    // Endpoint pour assigner une tâche à un membre
+    @PostMapping("/{taskId}/assign")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEMBER')")
+    public ResponseEntity<TaskResponse> assignTaskToMember(
+            @PathVariable Integer taskId,
+            @RequestParam Integer memberId,
+            Authentication authentication) throws MessagingException {
+        TaskResponse updatedTask = taskService.assignTaskToMember(taskId, memberId, authentication);
+        return ResponseEntity.ok(updatedTask);
     }
 }
