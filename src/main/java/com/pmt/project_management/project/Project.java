@@ -1,5 +1,6 @@
 package com.pmt.project_management.project;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pmt.project_management.common.BaseEntity;
 import com.pmt.project_management.task.Task;
 import com.pmt.project_management.user.User;
@@ -36,7 +37,7 @@ public class Project extends BaseEntity {
     private LocalDate startDate;
 
     // Relation ManyToOne pour définir le propriétaire du projet
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "owner_id")
     private User owner;  // Le propriétaire du projet (administrateur)
 
@@ -48,7 +49,8 @@ public class Project extends BaseEntity {
     private Set<User> members = new HashSet<>();  // Les membres affectés au projet
 
     // Liste des tâches associées au projet (OneToMany relation)
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "project")
+    @JsonIgnore
     private List<Task> tasks;  // Les tâches associées au projet
 
 }

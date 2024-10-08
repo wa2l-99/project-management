@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.pmt.project_management.project.ProjectSpecification.withOwnerId;
 
@@ -36,32 +37,36 @@ public class ProjectService {
         // Récupérer l'utilisateur connecté
         User user = (User) connectedUser.getPrincipal();
 
-        // Mapper la requête en un objet Project
         Project project = projectMapper.toProject(request);
-
-        // Définir l'utilisateur comme propriétaire du projet
-        project.setOwner(user);
 
         // Vérifier si un projet avec le même nom existe déjà
         if (projectRepository.existsByName(project.getName())) {
             throw new AlreadyExistsException("Le projet avec le nom " + project.getName() + " existe déjà");
         }
 
-        // Récupérer le rôle ADMIN depuis la base de données
-        Role adminRole = roleRepository.findByNom(ERole.ADMIN)
-                .orElseThrow(() -> new IllegalStateException("Error: Role ADMIN is not found."));
+        // Vérifier si l'utilisateur n'a aucun rôle
+        if (user.getRoles().isEmpty()) {
+            // Récupérer le rôle ADMIN depuis la base de données
+            Role adminRole = roleRepository.findByNom(ERole.ADMIN)
+                    .orElseThrow(() -> new IllegalStateException("Error: Role ADMIN is not found."));
 
-        // Assigner le rôle ADMIN à l'utilisateur et sauvegarder cette modification
-        user.getRoles().add(adminRole);
-        userRepository.save(user);  // Persister la modification du rôle de l'utilisateur
+            // Assigner le rôle ADMIN à l'utilisateur
+            user.getRoles().add(adminRole);
+            userRepository.save(user);  // Persister la modification du rôle de l'utilisateur
+        }
+        // Si l'utilisateur a un rôle autre que ADMIN, il ne peut pas créer un projet
+        else if (user.getRoles().stream().noneMatch(role -> role.getNom().equals(ERole.ADMIN))) {
+            throw new IllegalStateException("Vous ne possédez pas les autorisations nécessaires pour créer un projet.");
+        }
+
+        // Définir l'utilisateur comme propriétaire du projet
+        project.setOwner(user);
 
         // Ajouter l'utilisateur créateur comme membre du projet
         project.getMembers().add(user);
 
-        // Sauvegarder le projet dans la base de données
         projectRepository.save(project);
 
-        // Retourner l'ID du projet nouvellement créé
         return project.getId();
     }
 
@@ -208,6 +213,14 @@ public class ProjectService {
         }
 
         return userMapper.fromUser(member);
+    }
+
+    // Récupérer tous les projets où l'utilisateur est membre
+    public List<ProjectResponse> getProjectsForUser(User user) {
+        List<Project> projects = projectRepository.findByMembersContaining(user);  // Requête pour trouver les projets où l'utilisateur est membre
+        return projects.stream()
+                .map(projectMapper::toProjectResponse)
+                .collect(Collectors.toList());
     }
 
 
